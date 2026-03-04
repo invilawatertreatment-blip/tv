@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HMI Invila™ - KIW Semarang</title>
+    <style>
+        :root {
+            /* Latar belakang & Panel: Dibuat lebih solid */
+            --bg-dark: #0b0e14; 
+            --panel-bg: #161b22; 
+            --border-color: #30363d;
+
+            /* Aksen & Branding: Dibuat menyala (High Contrast) */
+            --accent-blue: #58a6ff; 
+            --kiw-purple: #4c35a6; 
+            --kiw-purple-light: #7c64d5;
+
+            /* Warna Teks: Putih murni agar sangat jelas */
+            --text-main: #ffffff;      
+            --text-secondary: #c9d1d9; 
+            --success-green: #3fb950;  /* Hijau neon untuk status */
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* HEADER */
+        header {
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 20px 40px; 
+            background: var(--panel-bg); 
+            border-bottom: 3px solid var(--accent-blue);
+            box-shadow: 0px 5px 20px rgba(0,0,0,0.6);
+        }
+
+        .logo-container { display: flex; align-items: center; gap: 20px; }
+        .logo-kiw-box {
+            border-left: 2px solid #444;
+            padding-left: 15px;
+            font-size: 0.8rem;
+            line-height: 1.2;
+        }
+
+        .header-title { text-align: center; flex-grow: 1; }
+        .header-title h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-main);
+        }
+        .header-title p {
+            margin: 5px 0 0;
+            color: var(--accent-blue);
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        #clock {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-blue);
+            min-width: 150px;
+            text-align: right;
+        }
+
+        /* MAIN DASHBOARD */
+        main {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            flex-grow: 1;
+        }
+
+        .card {
+            background: var(--panel-bg);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        h3 {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 3.2rem;
+            font-weight: bold;
+            color: var(--accent-blue);
+            text-shadow: 0 0 15px rgba(88, 166, 255, 0.4);
+            margin: 10px 0;
+        }
+
+        .unit-desc {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        /* WATER FLOW ANIMATION */
+        .process-visual {
+            text-align: center;
+            background: #0d1117;
+        }
+
+        .pipe {
+            width: 90%;
+            height: 18px;
+            background: #21262d;
+            border-radius: 10px;
+            margin: 10px auto;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #30363d;
+        }
+
+        .water-flow {
+            position: absolute;
+            height: 100%;
+            width: 200%;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                var(--accent-blue) 50%, 
+                transparent 100%);
+            animation: flow 1.5s linear infinite;
+        }
+
+        @keyframes flow {
+            from { transform: translateX(-50%); }
+            to { transform: translateX(0%); }
+        }
+
+        .dashed-line {
+            height: 60px;
+            border-left: 3px dashed #30363d;
+            margin: 5px auto;
+            width: 0;
+        }
+
+        /* FOOTER MARQUEE */
+        footer {
+            background: var(--kiw-purple);
+            color: white;
+            padding: 12px 0;
+            overflow: hidden;
+        }
+
+        .marquee {
+            white-space: nowrap;
+            display: inline-block;
+            animation: marquee 25s linear infinite;
+            font-weight: 500;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(100vw); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            background: #21262d;
+            height: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-blue);
+            box-shadow: 0 0 10px var(--accent-blue);
+            transition: width 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-container">
+            <div style="color: white; font-size: 1.8rem; font-weight: bold; letter-spacing: -1px;">invila™</div>
+            <div class="logo-kiw-box">
+                Member of <br><strong>DANAREKSA</strong>
+            </div>
+        </div>
+        <div class="header-title">
+            <h1>Integrated SPAM Control</h1>
+            <p>KAWASAN INDUSTRI WIJAYAKUSUMA (KIW) SEMARANG</p>
+        </div>
+        <div id="clock">00:00:00</div>
+    </header>
+
+    <main>
+        <div class="card">
+            <h3>Total Produksi Hari Ini</h3>
+            <div class="stat-value" id="prod-value">1,245</div>
+            <p class="unit-desc">METER KUBIK (m³)</p>
+            <hr style="border: 0.5px solid #333; margin: 20px 0;">
+            <h3>Status Sistem</h3>
+            <div style="color: var(--success-green); font-weight: bold; font-size: 1.3rem; display: flex; align-items: center; gap: 8px;">
+                <span style="animation: blink 1s infinite;">●</span> RUNNING OPTIMAL
+            </div>
+        </div>
+
+        <div class="card process-visual">
+            <h2 style="color: var(--accent-blue); font-size: 1.2rem; margin-top: 0;">SMART WATER MONITORING</h2>
+            
+            <div style="margin: 20px 0;">
+                <p style="font-size: 0.8rem; margin-bottom: 5px;">INTAKE RIVER WATER</p>
+                <div class="pipe"><div class="water-flow"></div></div>
+                
+                <div class="dashed-line"></div>
+                
+                <p style="font-size: 0.8rem; margin-bottom: 5px;">INVILA™ HYBRID TREATMENT</p>
+                <div class="pipe"><div class="water-flow"></div></div>
+            </div>
+            
+            <p style="font-style: italic; color: var(--text-secondary); font-size: 0.75rem;">
+                Data diproses secara real-time dari PLC Siemens S7-1200
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Kualitas Air (TDS)</h3>
+            <div class="stat-value">185</div>
+            <p class="unit-desc">PPM (STANDAR INDUSTRI)</p>
+            <hr style="border: 0.5px solid #333; margin: 20px 0;">
+            <h3>Sisa Kapasitas</h3>
+            <div class="stat-value">82%</div>
+            <div class="progress-container">
+                <div class="progress-fill" style="width: 82%;"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="marquee">
+            PENGUMUMAN: Seluruh air bersih di Kawasan Industri Wijayakusuma diproduksi oleh <strong>Invila™</strong> dengan sistem Smart Infrastructure Zero CAPEX. | Keandalan sistem saat ini: 100% | Kualitas air memenuhi standar baku mutu nasional (Permenkes). &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </div>
+    </footer>
+
+    <script>
+        // Update Jam Real-time
+        function updateClock() {
+            const now = new Date();
+            const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            document.getElementById('clock').innerText = now.toLocaleTimeString('id-ID', options);
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Simulasi Angka Produksi Bertambah
+        let prod = 1245;
+        setInterval(() => {
+            prod += Math.floor(Math.random() * 2);
+            document.getElementById('prod-value').innerText = prod.toLocaleString('id-ID');
+        }, 5000);
+
+        // Animasi Kedip Status
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes blink {
+                0% { opacity: 1; }
+                50% { opacity: 0.3; }
+                100% { opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
