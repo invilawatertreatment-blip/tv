@@ -1,96 +1,12 @@
-<!doctype html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Invila™ | Final Digital Twin v.7.4 [Restored]</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@600&family=Inter:wght@400;900&display=swap');
-
-    :root {
-      --bg: #010409; /* Gelap total premium */
-      --cyan-plasma: #22d3ee;
-      --gold-tech: #fbbf24;
-      --green-bio: #22c55e;
-      --border-black: #000000;
-    }
-
-    body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; overflow: hidden; }
-    .container { max-width: 1440px; margin: 0 auto; padding: 10px; }
-    
-    .header h1 { 
-      font-size: 13px; color: #475569; text-align: center; 
-      letter-spacing: 7px; font-family: 'Fira Code', monospace; margin: 5px 0;
-    }
-
-    .viz-container {
-      background: #fff; border: 4px solid var(--border-black); border-radius: 15px;
-      position: relative; overflow: hidden; box-shadow: 0 0 60px rgba(34, 211, 238, 0.4);
-    }
-
-    canvas { width: 100%; height: 620px; display: block; }
-
-    /* --- SCADA FOOTER DYNAMIC --- */
-    .scada-footer {
-      display: grid; grid-template-columns: repeat(5, 1fr);
-      background: #ffffff; border-top: 4px solid var(--border-black);
-    }
-
-    .scada-item { 
-      padding: 15px; border-right: 1px solid #e2e8f0; 
-      display: flex; flex-direction: column; justify-content: center; position: relative;
-    }
-
-    /* THE CORE HIGHLIGHT */
-    .scada-item.the-core {
-      background: linear-gradient(135deg, #ffffff 0%, #cffafe 100%);
-      border-top: 4px solid var(--cyan-plasma);
-    }
-    
-    .scada-item.the-core::after {
-      content: 'CORE TECH'; position: absolute; top: 5px; right: 10px;
-      font-size: 7px; font-family: 'Fira Code'; color: var(--cyan-plasma); font-weight: bold;
-    }
-
-    .scada-item.the-core span { color: var(--cyan-plasma); font-size: 11px; text-shadow: 0 0 5px rgba(34, 211, 238, 0.3); }
-
-    .scada-item label { 
-      font-size: 8px; color: #94a3b8; font-family: 'Fira Code'; 
-      text-transform: uppercase; display: flex; align-items: center; gap: 8px;
-    }
-
-    .led-core { 
-      width: 8px; height: 8px; border-radius: 50%; background: var(--cyan-plasma);
-      box-shadow: 0 0 10px var(--cyan-plasma); animation: flicker 0.1s infinite;
-    }
-
-    @keyframes flicker { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
-  </style>
-</head>
-<body>
-
-<div class="container">
-  <div class="header"><h1>INVILA™ AURORA ION-CRACKER</h1></div>
-  <div class="header" style="font-size: 8px; letter-spacing: 2px; color: var(--text-muted); margin-top: -10px;">(Advanced Oxidation & Chelate Breaking Technology)</div>
-  <div class="viz-container">
-    <canvas id="invilaEngine"></canvas>
-    
-    <div class="scada-footer">
-      <div class="scada-item"><label>Stage 01</label><span>EQUALISASI</span></div>
-      <div class="scada-item the-core">
-        <label><div class="led-core"></div> HIGH-ENERGY</label>
-        <span>OXY-PURE™ CORE</span>
-      </div>
-      <div class="scada-item"><label>Stage 03</label><span>MBBR FEAST</span></div>
-      <div class="scada-item"><label>Stage 04</label><span>LAMELLA HOPPER</span></div>
-      <div class="scada-item"><label>Stage 05</label><span>AERO GSF</span></div>
-    </div>
-  </div>
-</div>
-
 <script>
   const canvas = document.getElementById('invilaEngine');
   const ctx = canvas.getContext('2d');
+  
+  // 1. Inisialisasi Gambar Bakteri
+  const bactImg = new Image();
+  // Ganti URL di bawah ini dengan link raw github kamu nanti
+  bactImg.src = 'bacteri.png'; 
+
   let particles = [];
   let bacteria = [];
   let waterBlocks = [];
@@ -101,14 +17,13 @@
     canvas.height = 620;
     particles = []; bacteria = []; waterBlocks = [];
 
-    // Massa Air
     for(let i=0; i<3; i++) {
         waterBlocks.push({ x: i * (canvas.width / 2.2), w: canvas.width / 1.5, speed: 0.6 });
     }
 
     const s2 = canvas.width * 0.4;
     for(let i=0; i<500; i++) particles.push(createParticle(Math.random() * s2, i));
-    for(let i=0; i<250; i++) spawnBacteria();
+    for(let i=0; i<20; i++) spawnBacteria(); // Mengurangi jumlah agar tidak terlalu ramai karena menggunakan gambar
   }
 
   function createParticle(xPos, id) {
@@ -122,8 +37,13 @@
   function spawnBacteria() {
     const s2 = canvas.width * 0.4, s3 = canvas.width * 0.6;
     bacteria.push({
-      x: s2 + 40 + Math.random() * (s3 - s2 - 80), y: 150 + Math.random() * 350,
-      size: 10, state: 'EATING', vx: (Math.random() - 0.5) * 3, vy: (Math.random() - 0.5) * 3
+      x: s2 + 40 + Math.random() * (s3 - s2 - 80), 
+      y: 150 + Math.random() * 350,
+      size: 45, // Ukuran gambar bakteri
+      state: 'EATING', 
+      vx: (Math.random() - 0.5) * 3, 
+      vy: (Math.random() - 0.5) * 3,
+      angle: Math.random() * Math.PI * 2 // Untuk rotasi tambahan
     });
   }
 
@@ -143,7 +63,6 @@
     const s1 = canvas.width * 0.2, s2 = canvas.width * 0.4, s3 = canvas.width * 0.6, s4 = canvas.width * 0.8;
     const hopperX = s3 + (s4 - s3) / 2, hopperY = canvas.height - 120;
 
-    // Fluid Air Flow ( Lapisan Paling Belakang )
     waterBlocks.forEach(wb => {
         wb.x += wb.speed;
         if(wb.x > canvas.width) wb.x = -wb.w;
@@ -151,7 +70,6 @@
         ctx.beginPath(); ctx.roundRect(wb.x, 60, wb.w, canvas.height - 180, 120); ctx.fill();
     });
 
-    // --- AURORA CORE BACKGROUND (STAGE 2) ---
     let grd = ctx.createLinearGradient(s1, 0, s2, 0);
     grd.addColorStop(0, 'rgba(255,255,255,1)');
     grd.addColorStop(0.5, `rgba(34, 211, 238, ${0.1 + Math.random()*0.1})`);
@@ -159,64 +77,58 @@
     ctx.fillStyle = grd;
     ctx.fillRect(s1, 60, s2 - s1, canvas.height - 180);
 
-    // GSF Crystal Blue Overlay
     ctx.fillStyle = 'rgba(0, 191, 255, 0.15)'; ctx.fillRect(s4, 60, canvas.width - s4, canvas.height - 180);
 
-    // Structural Grid Lines
     ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
     [s1, s2, s3, s4].forEach(l => { ctx.beginPath(); ctx.moveTo(l, 60); ctx.lineTo(l, canvas.height); ctx.stroke(); });
 
-    // --- draw STAGE 2 NEON GLOW BORDERS (OVERLOAD) ---
     ctx.strokeStyle = 'rgba(34, 211, 238, 0.5)';
     ctx.lineWidth = 4;
     ctx.strokeRect(s1+2, 60, s2-s1-4, canvas.height-180);
-    ctx.lineWidth = 1;
 
-    // --- RESTORED: LAMELLA PLATES & HOPPER V-SHAPE ---
-    // Gambar Lamella Miring 60 derajat (Stage 4)
     ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 2;
     for(let i=0; i<5; i++){
       let xS = s3+30+(i*30); ctx.beginPath(); ctx.moveTo(xS, 400); 
       ctx.lineTo(xS + Math.cos(60*Math.PI/180)*140, 400 - Math.sin(60*Math.PI/180)*140); ctx.stroke();
     }
-    // Gambar Corong Hopper (Stage 4)
     ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5; ctx.beginPath();
     ctx.moveTo(s3+15, 420); ctx.lineTo(hopperX, hopperY); ctx.lineTo(s4-15, 420); ctx.stroke();
-    ctx.lineWidth = 1;
 
-    // Bacteria Logic
+    // 2. Logika Menggambar Bakteri Menggunakan Gambar
     bacteria.forEach(b => {
-      let m = Math.abs(Math.sin(frame * 0.18)) * 0.85;
       if(b.state === 'EATING') {
         b.x += b.vx; b.y += b.vy;
         if (b.x < s2 + 10) { b.x = s2 + 11; b.vx *= -1; }
         if (b.x > s3) b.state = 'SETTLING';
         if (b.y < 110 || b.y > 550) b.vy *= -1;
+        b.angle += 0.02; // Rotasi pelan saat berenang
       } else if (b.state === 'SETTLING') {
         b.x += (hopperX - b.x) * 0.08; b.y += 4.5; if(b.y > hopperY - 5) b.state = 'RECIRC';
       } else if (b.state === 'RECIRC') {
         b.x -= 4.5; b.y = hopperY + 40;
         if(b.x < s2 + 15) { b.state = 'EATING'; b.y = 150 + Math.random()*300; }
       }
-      ctx.fillStyle = '#22c55e'; ctx.beginPath(); ctx.moveTo(b.x, b.y);
-      ctx.arc(b.x, b.y, b.size, Math.PI + m, Math.PI + (Math.PI * 2) - m);
-      ctx.lineTo(b.x, b.y); ctx.fill();
+
+      // Proses Menggambar Image ke Canvas
+      ctx.save();
+      ctx.translate(b.x, b.y);
+      ctx.rotate(Math.sin(frame * 0.05) * 0.1); // Efek goyang sedikit
+      // DrawImage(image, x_offset, y_offset, width, height)
+      // Kita gunakan -size/2 agar titik pusatnya pas di tengah
+      ctx.drawImage(bactImg, -b.size/2, -b.size/2, b.size, b.size);
+      ctx.restore();
     });
 
-    // Particle Physics
     particles.forEach((p, idx) => {
       if(!p.isEaten && !p.isSettled) {
         p.x += p.speed;
-        if(p.x < s1) {
-          ctx.fillStyle = '#000'; ctx.fillRect(p.x, p.y, p.w, p.h);
-        }
+        if(p.x < s1) { ctx.fillStyle = '#000'; ctx.fillRect(p.x, p.y, p.w, p.h); }
         else if(p.x >= s1 && p.x < s2) {
-          // ION-CRACKER ZONE: VIBRATION & SPARK
           p.y += (Math.random()-0.5)*4.5; 
           if(Math.random() > 0.97) drawLightning(p.x, p.y, 40);
           ctx.fillStyle = '#0891b2';
           ctx.shadowBlur = 10; ctx.shadowColor = '#22d3ee';
-          ctx.fillRect(p.x, p.y, 16, p.h); // Memecah
+          ctx.fillRect(p.x, p.y, 16, p.h);
           ctx.shadowBlur = 0;
         }
         else if(p.x >= s2 && p.x < s3) {
@@ -248,6 +160,3 @@
   window.addEventListener('resize', init);
   init(); render();
 </script>
-
-</body>
-</html>
