@@ -2,9 +2,20 @@
   const canvas = document.getElementById('invilaEngine');
   const ctx = canvas.getContext('2d');
   
-  // 1. Inisialisasi Gambar Bakteri
+  // 1. Inisialisasi Gambar Bakteri dengan Callback Pengaman
+  let isImageLoaded = false;
   const bactImg = new Image();
-  // Ganti URL di bawah ini dengan link raw github kamu nanti
+  
+  bactImg.onload = () => {
+    isImageLoaded = true;
+    console.log("Gambar bakteri berhasil dimuat!");
+  };
+
+  bactImg.onerror = () => {
+    console.error("Gagal memuat gambar. Pastikan file 'bacteri.png' ada di folder yang sama.");
+  };
+
+  // Masukkan URL gambar kamu di sini
   bactImg.src = 'bacteri.png'; 
 
   let particles = [];
@@ -13,24 +24,28 @@
   let frame = 0;
 
   function init() {
-    canvas.width = canvas.offsetWidth;
+    // Pastikan ukuran canvas sesuai dengan container
+    canvas.width = canvas.offsetWidth || 800; 
     canvas.height = 620;
-    particles = []; bacteria = []; waterBlocks = [];
+    
+    particles = []; 
+    bacteria = []; 
+    waterBlocks = [];
 
     for(let i=0; i<3; i++) {
         waterBlocks.push({ x: i * (canvas.width / 2.2), w: canvas.width / 1.5, speed: 0.6 });
     }
 
     const s2 = canvas.width * 0.4;
-    for(let i=0; i<500; i++) particles.push(createParticle(Math.random() * s2, i));
-    for(let i=0; i<20; i++) spawnBacteria(); // Mengurangi jumlah agar tidak terlalu ramai karena menggunakan gambar
+    for(let i=0; i<400; i++) particles.push(createParticle(Math.random() * s2, i));
+    for(let i=0; i<15; i++) spawnBacteria(); 
   }
 
   function createParticle(xPos, id) {
     return {
       id: id, x: xPos, y: 100 + Math.random() * (canvas.height - 300),
       w: 30, h: 2, speed: 1.2 + Math.random() * 1.0,
-      jitter: 0.6, isEaten: false, isSettled: false
+      isEaten: false, isSettled: false
     };
   }
 
@@ -39,11 +54,10 @@
     bacteria.push({
       x: s2 + 40 + Math.random() * (s3 - s2 - 80), 
       y: 150 + Math.random() * 350,
-      size: 45, // Ukuran gambar bakteri
+      size: 40, 
       state: 'EATING', 
-      vx: (Math.random() - 0.5) * 3, 
-      vy: (Math.random() - 0.5) * 3,
-      angle: Math.random() * Math.PI * 2 // Untuk rotasi tambahan
+      vx: (Math.random() - 0.5) * 2, 
+      vy: (Math.random() - 0.5) * 2
     });
   }
 
@@ -59,10 +73,14 @@
   }
 
   function render() {
-    ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0, canvas.width, canvas.height);
+    // Bersihkan layar setiap frame
+    ctx.fillStyle = '#ffffff'; 
+    ctx.fillRect(0,0, canvas.width, canvas.height);
+
     const s1 = canvas.width * 0.2, s2 = canvas.width * 0.4, s3 = canvas.width * 0.6, s4 = canvas.width * 0.8;
     const hopperX = s3 + (s4 - s3) / 2, hopperY = canvas.height - 120;
 
+    // Fluid Air Flow
     waterBlocks.forEach(wb => {
         wb.x += wb.speed;
         if(wb.x > canvas.width) wb.x = -wb.w;
@@ -70,83 +88,67 @@
         ctx.beginPath(); ctx.roundRect(wb.x, 60, wb.w, canvas.height - 180, 120); ctx.fill();
     });
 
+    // Aurora Core Background
     let grd = ctx.createLinearGradient(s1, 0, s2, 0);
-    grd.addColorStop(0, 'rgba(255,255,255,1)');
+    grd.addColorStop(0, '#ffffff');
     grd.addColorStop(0.5, `rgba(34, 211, 238, ${0.1 + Math.random()*0.1})`);
-    grd.addColorStop(1, 'rgba(255,255,255,1)');
+    grd.addColorStop(1, '#ffffff');
     ctx.fillStyle = grd;
     ctx.fillRect(s1, 60, s2 - s1, canvas.height - 180);
 
-    ctx.fillStyle = 'rgba(0, 191, 255, 0.15)'; ctx.fillRect(s4, 60, canvas.width - s4, canvas.height - 180);
-
+    // Grid & Borders
     ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
     [s1, s2, s3, s4].forEach(l => { ctx.beginPath(); ctx.moveTo(l, 60); ctx.lineTo(l, canvas.height); ctx.stroke(); });
 
-    ctx.strokeStyle = 'rgba(34, 211, 238, 0.5)';
-    ctx.lineWidth = 4;
-    ctx.strokeRect(s1+2, 60, s2-s1-4, canvas.height-180);
-
-    ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 2;
-    for(let i=0; i<5; i++){
-      let xS = s3+30+(i*30); ctx.beginPath(); ctx.moveTo(xS, 400); 
-      ctx.lineTo(xS + Math.cos(60*Math.PI/180)*140, 400 - Math.sin(60*Math.PI/180)*140); ctx.stroke();
-    }
-    ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5; ctx.beginPath();
-    ctx.moveTo(s3+15, 420); ctx.lineTo(hopperX, hopperY); ctx.lineTo(s4-15, 420); ctx.stroke();
-
-    // 2. Logika Menggambar Bakteri Menggunakan Gambar
+    // Bakteri Logic
     bacteria.forEach(b => {
       if(b.state === 'EATING') {
         b.x += b.vx; b.y += b.vy;
-        if (b.x < s2 + 10) { b.x = s2 + 11; b.vx *= -1; }
-        if (b.x > s3) b.state = 'SETTLING';
+        if (b.x < s2 + 10 || b.x > s3 - 10) b.vx *= -1;
         if (b.y < 110 || b.y > 550) b.vy *= -1;
-        b.angle += 0.02; // Rotasi pelan saat berenang
       } else if (b.state === 'SETTLING') {
-        b.x += (hopperX - b.x) * 0.08; b.y += 4.5; if(b.y > hopperY - 5) b.state = 'RECIRC';
+        b.x += (hopperX - b.x) * 0.05; b.y += 3; 
+        if(b.y > hopperY - 5) b.state = 'RECIRC';
       } else if (b.state === 'RECIRC') {
-        b.x -= 4.5; b.y = hopperY + 40;
+        b.x -= 4; b.y = hopperY + 40;
         if(b.x < s2 + 15) { b.state = 'EATING'; b.y = 150 + Math.random()*300; }
       }
 
-      // Proses Menggambar Image ke Canvas
-      ctx.save();
-      ctx.translate(b.x, b.y);
-      ctx.rotate(Math.sin(frame * 0.05) * 0.1); // Efek goyang sedikit
-      // DrawImage(image, x_offset, y_offset, width, height)
-      // Kita gunakan -size/2 agar titik pusatnya pas di tengah
-      ctx.drawImage(bactImg, -b.size/2, -b.size/2, b.size, b.size);
-      ctx.restore();
+      if (isImageLoaded) {
+        // Jika gambar siap, gambar karakter bakteri
+        ctx.save();
+        ctx.translate(b.x, b.y);
+        ctx.rotate(Math.sin(frame * 0.05) * 0.1);
+        ctx.drawImage(bactImg, -b.size/2, -b.size/2, b.size, b.size);
+        ctx.restore();
+      } else {
+        // Fallback: Jika gambar gagal, tampilkan lingkaran hijau (biar tidak blank)
+        ctx.fillStyle = '#22c55e';
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, 10, 0, Math.PI * 2);
+        ctx.fill();
+      }
     });
 
+    // Particle Physics (Disederhanakan untuk performa)
     particles.forEach((p, idx) => {
       if(!p.isEaten && !p.isSettled) {
         p.x += p.speed;
         if(p.x < s1) { ctx.fillStyle = '#000'; ctx.fillRect(p.x, p.y, p.w, p.h); }
         else if(p.x >= s1 && p.x < s2) {
-          p.y += (Math.random()-0.5)*4.5; 
-          if(Math.random() > 0.97) drawLightning(p.x, p.y, 40);
-          ctx.fillStyle = '#0891b2';
-          ctx.shadowBlur = 10; ctx.shadowColor = '#22d3ee';
-          ctx.fillRect(p.x, p.y, 16, p.h);
-          ctx.shadowBlur = 0;
+          if(Math.random() > 0.98) drawLightning(p.x, p.y, 30);
+          ctx.fillStyle = '#0891b2'; ctx.fillRect(p.x, p.y, 16, p.h);
         }
         else if(p.x >= s2 && p.x < s3) {
           ctx.fillStyle = '#0891b2';
-          if(p.x > s2 + 50 && p.id % 4 !== 0) p.isEaten = true;
+          if(p.x > s2 + 60 && p.id % 5 === 0) p.isEaten = true;
           else ctx.fillRect(p.x, p.y, 14, p.h);
         }
         else if(p.x >= s3 && p.x < s4) {
-          p.y += 4.0; p.x += (hopperX - p.x) * 0.06;
+          p.y += 3; p.x += (hopperX - p.x) * 0.05;
           if(p.y > hopperY - 5) p.isSettled = true;
           ctx.fillStyle = '#0891b2'; ctx.fillRect(p.x, p.y, 10, p.h);
         }
-        else if(p.x >= s4) {
-          if(p.id % 12 !== 0) p.x = canvas.width + 100;
-          else { ctx.fillStyle = 'rgba(0, 191, 255, 0.9)'; ctx.fillRect(p.x, p.y, 7, p.h); }
-        }
-      } else if (p.isSettled) {
-        ctx.fillStyle = '#0891b2'; ctx.fillRect(p.x, hopperY - (idx%15), 10, 2);
       }
       if(p.x > canvas.width + 20 || p.isEaten) {
         p.x = -40; p.y = 100 + Math.random() * (canvas.height - 300); p.isEaten = false; p.isSettled = false;
@@ -158,5 +160,6 @@
   }
 
   window.addEventListener('resize', init);
-  init(); render();
+  init(); 
+  render();
 </script>
