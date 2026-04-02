@@ -1,295 +1,253 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HMI Invila™ - KIW Semarang</title>
-    <style>
-        :root {
-            /* Latar belakang & Panel: Dibuat lebih solid */
-            --bg-dark: #0b0e14; 
-            --panel-bg: #161b22; 
-            --border-color: #30363d;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Invila™ | Final Digital Twin v.7.4 [Restored]</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@600&family=Inter:wght@400;900&display=swap');
 
-            /* Aksen & Branding: Dibuat menyala (High Contrast) */
-            --accent-blue: #58a6ff; 
-            --kiw-purple: #4c35a6; 
-            --kiw-purple-light: #7c64d5;
+    :root {
+      --bg: #010409; /* Gelap total premium */
+      --cyan-plasma: #22d3ee;
+      --gold-tech: #fbbf24;
+      --green-bio: #22c55e;
+      --border-black: #000000;
+    }
 
-            /* Warna Teks: Putih murni agar sangat jelas */
-            --text-main: #ffffff;      
-            --text-secondary: #c9d1d9; 
-            --success-green: #3fb950;  /* Hijau neon untuk status */
-        }
+    body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; overflow: hidden; }
+    .container { max-width: 1440px; margin: 0 auto; padding: 10px; }
+    
+    .header h1 { 
+      font-size: 13px; color: #475569; text-align: center; 
+      letter-spacing: 7px; font-family: 'Fira Code', monospace; margin: 5px 0;
+    }
 
-        * {
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
+    .viz-container {
+      background: #fff; border: 4px solid var(--border-black); border-radius: 15px;
+      position: relative; overflow: hidden; box-shadow: 0 0 60px rgba(34, 211, 238, 0.4);
+    }
 
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
+    canvas { width: 100%; height: 620px; display: block; }
 
-        /* HEADER */
-        header {
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 20px 40px; 
-            background: var(--panel-bg); 
-            border-bottom: 3px solid var(--accent-blue);
-            box-shadow: 0px 5px 20px rgba(0,0,0,0.6);
-        }
+    /* --- SCADA FOOTER DYNAMIC --- */
+    .scada-footer {
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      background: #ffffff; border-top: 4px solid var(--border-black);
+    }
 
-        .logo-container { display: flex; align-items: center; gap: 20px; }
-        .logo-kiw-box {
-            border-left: 2px solid #444;
-            padding-left: 15px;
-            font-size: 0.8rem;
-            line-height: 1.2;
-        }
+    .scada-item { 
+      padding: 15px; border-right: 1px solid #e2e8f0; 
+      display: flex; flex-direction: column; justify-content: center; position: relative;
+    }
 
-        .header-title { text-align: center; flex-grow: 1; }
-        .header-title h1 {
-            margin: 0;
-            font-size: 1.8rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--text-main);
-        }
-        .header-title p {
-            margin: 5px 0 0;
-            color: var(--accent-blue);
-            font-weight: bold;
-            font-size: 0.9rem;
-        }
+    /* THE CORE HIGHLIGHT */
+    .scada-item.the-core {
+      background: linear-gradient(135deg, #ffffff 0%, #cffafe 100%);
+      border-top: 4px solid var(--cyan-plasma);
+    }
+    
+    .scada-item.the-core::after {
+      content: 'CORE TECH'; position: absolute; top: 5px; right: 10px;
+      font-size: 7px; font-family: 'Fira Code'; color: var(--cyan-plasma); font-weight: bold;
+    }
 
-        #clock {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--accent-blue);
-            min-width: 150px;
-            text-align: right;
-        }
+    .scada-item.the-core span { color: var(--cyan-plasma); font-size: 11px; text-shadow: 0 0 5px rgba(34, 211, 238, 0.3); }
 
-        /* MAIN DASHBOARD */
-        main {
-            display: grid;
-            grid-template-columns: 1fr 1.5fr 1fr;
-            gap: 20px;
-            padding: 20px;
-            flex-grow: 1;
-        }
+    .scada-item label { 
+      font-size: 8px; color: #94a3b8; font-family: 'Fira Code'; 
+      text-transform: uppercase; display: flex; align-items: center; gap: 8px;
+    }
 
-        .card {
-            background: var(--panel-bg);
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
+    .led-core { 
+      width: 8px; height: 8px; border-radius: 50%; background: var(--cyan-plasma);
+      box-shadow: 0 0 10px var(--cyan-plasma); animation: flicker 0.1s infinite;
+    }
 
-        h3 {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            margin-bottom: 10px;
-            text-transform: uppercase;
-        }
-
-        .stat-value {
-            font-size: 3.2rem;
-            font-weight: bold;
-            color: var(--accent-blue);
-            text-shadow: 0 0 15px rgba(88, 166, 255, 0.4);
-            margin: 10px 0;
-        }
-
-        .unit-desc {
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
-
-        /* WATER FLOW ANIMATION */
-        .process-visual {
-            text-align: center;
-            background: #0d1117;
-        }
-
-        .pipe {
-            width: 90%;
-            height: 18px;
-            background: #21262d;
-            border-radius: 10px;
-            margin: 10px auto;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid #30363d;
-        }
-
-        .water-flow {
-            position: absolute;
-            height: 100%;
-            width: 200%;
-            background: linear-gradient(90deg, 
-                transparent 0%, 
-                var(--accent-blue) 50%, 
-                transparent 100%);
-            animation: flow 1.5s linear infinite;
-        }
-
-        @keyframes flow {
-            from { transform: translateX(-50%); }
-            to { transform: translateX(0%); }
-        }
-
-        .dashed-line {
-            height: 60px;
-            border-left: 3px dashed #30363d;
-            margin: 5px auto;
-            width: 0;
-        }
-
-        /* FOOTER MARQUEE */
-        footer {
-            background: var(--kiw-purple);
-            color: white;
-            padding: 12px 0;
-            overflow: hidden;
-        }
-
-        .marquee {
-            white-space: nowrap;
-            display: inline-block;
-            animation: marquee 25s linear infinite;
-            font-weight: 500;
-        }
-
-        @keyframes marquee {
-            0% { transform: translateX(100vw); }
-            100% { transform: translateX(-100%); }
-        }
-
-        /* Progress Bar */
-        .progress-container {
-            width: 100%;
-            background: #21262d;
-            height: 12px;
-            border-radius: 6px;
-            margin-top: 15px;
-            overflow: hidden;
-        }
-        .progress-fill {
-            height: 100%;
-            background: var(--accent-blue);
-            box-shadow: 0 0 10px var(--accent-blue);
-            transition: width 0.5s ease-in-out;
-        }
-    </style>
+    @keyframes flicker { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+  </style>
 </head>
 <body>
 
-    <header>
-        <div class="logo-container">
-            <div style="color: white; font-size: 1.8rem; font-weight: bold; letter-spacing: -1px;">invila™</div>
-            <div class="logo-kiw-box">
-                Member of <br><strong>DANAREKSA</strong>
-            </div>
-        </div>
-        <div class="header-title">
-            <h1>Integrated SPAM Control</h1>
-            <p>KAWASAN INDUSTRI WIJAYAKUSUMA (KIW) SEMARANG</p>
-        </div>
-        <div id="clock">00:00:00</div>
-    </header>
+<div class="container">
+  <div class="header"><h1>INVILA™ AURORA ION-CRACKER</h1></div>
+  <div class="header" style="font-size: 8px; letter-spacing: 2px; color: var(--text-muted); margin-top: -10px;">(Advanced Oxidation & Chelate Breaking Technology)</div>
+  <div class="viz-container">
+    <canvas id="invilaEngine"></canvas>
+    
+    <div class="scada-footer">
+      <div class="scada-item"><label>Stage 01</label><span>EQUALISASI</span></div>
+      <div class="scada-item the-core">
+        <label><div class="led-core"></div> HIGH-ENERGY</label>
+        <span>OXY-PURE™ CORE</span>
+      </div>
+      <div class="scada-item"><label>Stage 03</label><span>MBBR FEAST</span></div>
+      <div class="scada-item"><label>Stage 04</label><span>LAMELLA HOPPER</span></div>
+      <div class="scada-item"><label>Stage 05</label><span>AERO GSF</span></div>
+    </div>
+  </div>
+</div>
 
-    <main>
-        <div class="card">
-            <h3>Total Produksi Hari Ini</h3>
-            <div class="stat-value" id="prod-value">1,245</div>
-            <p class="unit-desc">METER KUBIK (m³)</p>
-            <hr style="border: 0.5px solid #333; margin: 20px 0;">
-            <h3>Status Sistem</h3>
-            <div style="color: var(--success-green); font-weight: bold; font-size: 1.3rem; display: flex; align-items: center; gap: 8px;">
-                <span style="animation: blink 1s infinite;">●</span> RUNNING OPTIMAL
-            </div>
-        </div>
+<script>
+  const canvas = document.getElementById('invilaEngine');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  let bacteria = [];
+  let waterBlocks = [];
+  let frame = 0;
 
-        <div class="card process-visual">
-            <h2 style="color: var(--accent-blue); font-size: 1.2rem; margin-top: 0;">SMART WATER MONITORING</h2>
-            
-            <div style="margin: 20px 0;">
-                <p style="font-size: 0.8rem; margin-bottom: 5px;">INTAKE RIVER WATER</p>
-                <div class="pipe"><div class="water-flow"></div></div>
-                
-                <div class="dashed-line"></div>
-                
-                <p style="font-size: 0.8rem; margin-bottom: 5px;">INVILA™ HYBRID TREATMENT</p>
-                <div class="pipe"><div class="water-flow"></div></div>
-            </div>
-            
-            <p style="font-style: italic; color: var(--text-secondary); font-size: 0.75rem;">
-                Data diproses secara real-time dari PLC Siemens S7-1200
-            </p>
-        </div>
+  function init() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = 620;
+    particles = []; bacteria = []; waterBlocks = [];
 
-        <div class="card">
-            <h3>Kualitas Air (TDS)</h3>
-            <div class="stat-value">185</div>
-            <p class="unit-desc">PPM (STANDAR INDUSTRI)</p>
-            <hr style="border: 0.5px solid #333; margin: 20px 0;">
-            <h3>Sisa Kapasitas</h3>
-            <div class="stat-value">82%</div>
-            <div class="progress-container">
-                <div class="progress-fill" style="width: 82%;"></div>
-            </div>
-        </div>
-    </main>
+    // Massa Air
+    for(let i=0; i<3; i++) {
+        waterBlocks.push({ x: i * (canvas.width / 2.2), w: canvas.width / 1.5, speed: 0.6 });
+    }
 
-    <footer>
-        <div class="marquee">
-            PENGUMUMAN: Seluruh air bersih di Kawasan Industri Wijayakusuma diproduksi oleh <strong>Invila™</strong> dengan sistem Smart Infrastructure Zero CAPEX. | Keandalan sistem saat ini: 100% | Kualitas air memenuhi standar baku mutu nasional (Permenkes). &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        </div>
-    </footer>
+    const s2 = canvas.width * 0.4;
+    for(let i=0; i<500; i++) particles.push(createParticle(Math.random() * s2, i));
+    for(let i=0; i<250; i++) spawnBacteria();
+  }
 
-    <script>
-        // Update Jam Real-time
-        function updateClock() {
-            const now = new Date();
-            const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-            document.getElementById('clock').innerText = now.toLocaleTimeString('id-ID', options);
+  function createParticle(xPos, id) {
+    return {
+      id: id, x: xPos, y: 100 + Math.random() * (canvas.height - 300),
+      w: 30, h: 2, speed: 1.2 + Math.random() * 1.0,
+      jitter: 0.6, isEaten: false, isSettled: false
+    };
+  }
+
+  function spawnBacteria() {
+    const s2 = canvas.width * 0.4, s3 = canvas.width * 0.6;
+    bacteria.push({
+      x: s2 + 40 + Math.random() * (s3 - s2 - 80), y: 150 + Math.random() * 350,
+      size: 10, state: 'EATING', vx: (Math.random() - 0.5) * 3, vy: (Math.random() - 0.5) * 3
+    });
+  }
+
+  function drawLightning(x, y, dist) {
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    for(let i=0; i<3; i++) {
+        ctx.lineTo(x + (Math.random()-0.5)*dist, y - (Math.random()*dist));
+    }
+    ctx.stroke();
+  }
+
+  function render() {
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0, canvas.width, canvas.height);
+    const s1 = canvas.width * 0.2, s2 = canvas.width * 0.4, s3 = canvas.width * 0.6, s4 = canvas.width * 0.8;
+    const hopperX = s3 + (s4 - s3) / 2, hopperY = canvas.height - 120;
+
+    // Fluid Air Flow ( Lapisan Paling Belakang )
+    waterBlocks.forEach(wb => {
+        wb.x += wb.speed;
+        if(wb.x > canvas.width) wb.x = -wb.w;
+        ctx.fillStyle = 'rgba(8, 145, 178, 0.08)';
+        ctx.beginPath(); ctx.roundRect(wb.x, 60, wb.w, canvas.height - 180, 120); ctx.fill();
+    });
+
+    // --- AURORA CORE BACKGROUND (STAGE 2) ---
+    let grd = ctx.createLinearGradient(s1, 0, s2, 0);
+    grd.addColorStop(0, 'rgba(255,255,255,1)');
+    grd.addColorStop(0.5, `rgba(34, 211, 238, ${0.1 + Math.random()*0.1})`);
+    grd.addColorStop(1, 'rgba(255,255,255,1)');
+    ctx.fillStyle = grd;
+    ctx.fillRect(s1, 60, s2 - s1, canvas.height - 180);
+
+    // GSF Crystal Blue Overlay
+    ctx.fillStyle = 'rgba(0, 191, 255, 0.15)'; ctx.fillRect(s4, 60, canvas.width - s4, canvas.height - 180);
+
+    // Structural Grid Lines
+    ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
+    [s1, s2, s3, s4].forEach(l => { ctx.beginPath(); ctx.moveTo(l, 60); ctx.lineTo(l, canvas.height); ctx.stroke(); });
+
+    // --- draw STAGE 2 NEON GLOW BORDERS (OVERLOAD) ---
+    ctx.strokeStyle = 'rgba(34, 211, 238, 0.5)';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(s1+2, 60, s2-s1-4, canvas.height-180);
+    ctx.lineWidth = 1;
+
+    // --- RESTORED: LAMELLA PLATES & HOPPER V-SHAPE ---
+    // Gambar Lamella Miring 60 derajat (Stage 4)
+    ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 2;
+    for(let i=0; i<5; i++){
+      let xS = s3+30+(i*30); ctx.beginPath(); ctx.moveTo(xS, 400); 
+      ctx.lineTo(xS + Math.cos(60*Math.PI/180)*140, 400 - Math.sin(60*Math.PI/180)*140); ctx.stroke();
+    }
+    // Gambar Corong Hopper (Stage 4)
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5; ctx.beginPath();
+    ctx.moveTo(s3+15, 420); ctx.lineTo(hopperX, hopperY); ctx.lineTo(s4-15, 420); ctx.stroke();
+    ctx.lineWidth = 1;
+
+    // Bacteria Logic
+    bacteria.forEach(b => {
+      let m = Math.abs(Math.sin(frame * 0.18)) * 0.85;
+      if(b.state === 'EATING') {
+        b.x += b.vx; b.y += b.vy;
+        if (b.x < s2 + 10) { b.x = s2 + 11; b.vx *= -1; }
+        if (b.x > s3) b.state = 'SETTLING';
+        if (b.y < 110 || b.y > 550) b.vy *= -1;
+      } else if (b.state === 'SETTLING') {
+        b.x += (hopperX - b.x) * 0.08; b.y += 4.5; if(b.y > hopperY - 5) b.state = 'RECIRC';
+      } else if (b.state === 'RECIRC') {
+        b.x -= 4.5; b.y = hopperY + 40;
+        if(b.x < s2 + 15) { b.state = 'EATING'; b.y = 150 + Math.random()*300; }
+      }
+      ctx.fillStyle = '#22c55e'; ctx.beginPath(); ctx.moveTo(b.x, b.y);
+      ctx.arc(b.x, b.y, b.size, Math.PI + m, Math.PI + (Math.PI * 2) - m);
+      ctx.lineTo(b.x, b.y); ctx.fill();
+    });
+
+    // Particle Physics
+    particles.forEach((p, idx) => {
+      if(!p.isEaten && !p.isSettled) {
+        p.x += p.speed;
+        if(p.x < s1) {
+          ctx.fillStyle = '#000'; ctx.fillRect(p.x, p.y, p.w, p.h);
         }
-        setInterval(updateClock, 1000);
-        updateClock();
+        else if(p.x >= s1 && p.x < s2) {
+          // ION-CRACKER ZONE: VIBRATION & SPARK
+          p.y += (Math.random()-0.5)*4.5; 
+          if(Math.random() > 0.97) drawLightning(p.x, p.y, 40);
+          ctx.fillStyle = '#0891b2';
+          ctx.shadowBlur = 10; ctx.shadowColor = '#22d3ee';
+          ctx.fillRect(p.x, p.y, 16, p.h); // Memecah
+          ctx.shadowBlur = 0;
+        }
+        else if(p.x >= s2 && p.x < s3) {
+          ctx.fillStyle = '#0891b2';
+          if(p.x > s2 + 50 && p.id % 4 !== 0) p.isEaten = true;
+          else ctx.fillRect(p.x, p.y, 14, p.h);
+        }
+        else if(p.x >= s3 && p.x < s4) {
+          p.y += 4.0; p.x += (hopperX - p.x) * 0.06;
+          if(p.y > hopperY - 5) p.isSettled = true;
+          ctx.fillStyle = '#0891b2'; ctx.fillRect(p.x, p.y, 10, p.h);
+        }
+        else if(p.x >= s4) {
+          if(p.id % 12 !== 0) p.x = canvas.width + 100;
+          else { ctx.fillStyle = 'rgba(0, 191, 255, 0.9)'; ctx.fillRect(p.x, p.y, 7, p.h); }
+        }
+      } else if (p.isSettled) {
+        ctx.fillStyle = '#0891b2'; ctx.fillRect(p.x, hopperY - (idx%15), 10, 2);
+      }
+      if(p.x > canvas.width + 20 || p.isEaten) {
+        p.x = -40; p.y = 100 + Math.random() * (canvas.height - 300); p.isEaten = false; p.isSettled = false;
+      }
+    });
 
-        // Simulasi Angka Produksi Bertambah
-        let prod = 1245;
-        setInterval(() => {
-            prod += Math.floor(Math.random() * 2);
-            document.getElementById('prod-value').innerText = prod.toLocaleString('id-ID');
-        }, 5000);
+    frame++;
+    requestAnimationFrame(render);
+  }
 
-        // Animasi Kedip Status
-        const style = document.createElement('style');
-        style.innerHTML = `
-            @keyframes blink {
-                0% { opacity: 1; }
-                50% { opacity: 0.3; }
-                100% { opacity: 1; }
-            }
-        `;
-        document.head.appendChild(style);
-    </script>
+  window.addEventListener('resize', init);
+  init(); render();
+</script>
+
 </body>
 </html>
